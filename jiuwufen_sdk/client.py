@@ -3,6 +3,7 @@
 """
 
 import logging
+import time
 from typing import Any, Dict, Optional
 import requests
 
@@ -135,6 +136,10 @@ class JiuWuFenClient:
         """
         if data is None:
             data = {}
+        
+        # 处理时间戳（如果没有传入，则自动添加当前时间戳，单位：秒）
+        if 'timestamp' not in data:
+            data['timestamp'] = str(int(time.time()))
         
         # 生成签名
         signature = self.signature_util.generate_signature(data)

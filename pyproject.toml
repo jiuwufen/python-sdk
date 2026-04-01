@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jiuwufen-sdk"
-version = "1.0.0"
+version = "1.0.1"
 description = "95分开放平台官方 Python SDK"
 readme = "README.md"
 requires-python = ">=3.7"
