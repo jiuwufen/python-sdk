@@ -1,15 +1,19 @@
 """API 模块"""
 
-from .merchant import MerchantApi
-from .goods import GoodsApi
+from .digitalProduct import DigitalProductApi
 from .inventory import InventoryApi
+from .logistics import LogisticsApi
+from .merchantOnboarding import MerchantOnboardingApi
 from .order import OrderApi
-from .delivery import DeliveryApi
+from .product import ProductApi
+from .returns import ReturnsApi
 
 __all__ = [
-    "MerchantApi",
-    "GoodsApi",
+    "DigitalProductApi",
     "InventoryApi",
+    "LogisticsApi",
+    "MerchantOnboardingApi",
     "OrderApi",
-    "DeliveryApi"
+    "ProductApi",
+    "ReturnsApi"
 ]

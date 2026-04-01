@@ -7,11 +7,13 @@ import time
 from typing import Any, Dict, Optional
 import requests
 
-from .api.merchant import MerchantApi
-from .api.goods import GoodsApi
+from .api.digitalProduct import DigitalProductApi
 from .api.inventory import InventoryApi
+from .api.logistics import LogisticsApi
+from .api.merchantOnboarding import MerchantOnboardingApi
 from .api.order import OrderApi
-from .api.delivery import DeliveryApi
+from .api.product import ProductApi
+from .api.returns import ReturnApi
 from .utils.signature import SignatureUtil
 from .exceptions import ApiException
 
@@ -85,37 +87,15 @@ class JiuWuFenClient:
         self.signature_util = SignatureUtil(merchant_secret, platform_secret)
         
         # 初始化 API 服务
-        self._merchant = MerchantApi(self)
-        self._goods = GoodsApi(self)
+        self._digital_product = DigitalProductApi(self)
         self._inventory = InventoryApi(self)
+        self._logistics = LogisticsApi(self)
+        self._merchant_onboarding = MerchantOnboardingApi(self)
         self._order = OrderApi(self)
-        self._delivery = DeliveryApi(self)
+        self._product = ProductApi(self)
+        self._returns = ReturnApi(self)
     
-    @property
-    def merchant(self) -> MerchantApi:
-        """商户入驻 API"""
-        return self._merchant
-    
-    @property
-    def goods(self) -> GoodsApi:
-        """商品管理 API"""
-        return self._goods
-    
-    @property
-    def inventory(self) -> InventoryApi:
-        """库存管理 API"""
-        return self._inventory
-    
-    @property
-    def order(self) -> OrderApi:
-        """订单管理 API"""
-        return self._order
-    
-    @property
-    def delivery(self) -> DeliveryApi:
-        """物流管理 API"""
-        return self._delivery
-    
+
     def request(
         self,
         path: str,
@@ -207,3 +187,31 @@ class JiuWuFenClient:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """上下文管理器出口"""
         self.close()
+
+    @property
+    def digital_product(self) -> DigitalProductApi:
+        return self._digital_product
+
+    @property
+    def inventory(self) -> InventoryApi:
+        return self._inventory
+
+    @property
+    def logistics(self) -> LogisticsApi:
+        return self._logistics
+
+    @property
+    def merchant_onboarding(self) -> MerchantOnboardingApi:
+        return self._merchant_onboarding
+
+    @property
+    def order(self) -> OrderApi:
+        return self._order
+
+    @property
+    def product(self) -> ProductApi:
+        return self._product
+
+    @property
+    def returns(self) -> ReturnApi:
+        return self._returns
