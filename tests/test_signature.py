@@ -75,5 +75,21 @@ class TestSignatureUtil(unittest.TestCase):
         # 相同参数应该生成相同的签名
         self.assertEqual(signature1, signature2)
 
+    def test_null_field_contributes_null_literal(self):
+        with_null = {"a": None, "b": "x"}
+        without_a = {"b": "x"}
+        self.assertNotEqual(
+            self.util.generate_signature(without_a),
+            self.util.generate_signature(with_null),
+        )
+
+    def test_float_whole_number_matches_int(self):
+        with_int = {"imei": "x", "sku_id": 12}
+        with_float = {"imei": "x", "sku_id": 12.0}
+        self.assertEqual(
+            self.util.generate_signature(with_int),
+            self.util.generate_signature(with_float),
+        )
+
 if __name__ == "__main__":
     unittest.main()

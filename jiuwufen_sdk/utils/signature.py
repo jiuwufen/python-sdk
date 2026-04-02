@@ -3,8 +3,11 @@
 """
 
 import base64
+import copy
 import hashlib
 import json
+import math
+from decimal import Decimal
 from typing import Any, Dict
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -33,6 +36,8 @@ class SignatureUtil:
         生成请求签名
         
         算法: token = md5(base64_encode(商家密钥 + 平台密钥) + 排序并拼接后的参数字符串)
+        与 Java SignatureUtil / GenSign 一致：仅 str 原样拼接，其余 json.dumps（含 None→null）；
+        嵌套 dict 先排序 key；整型语义的 float 先归一为 int（对齐 Go json / Java Gson）。
         
         Args:
             params: 请求参数
@@ -40,21 +45,22 @@ class SignatureUtil:
         Returns:
             签名字符串
         """
+        work = self._normalize_integral(copy.deepcopy(params))
+
         # 1. 获取所有 Keys 并排序（排除 token 本身）
-        keys = sorted([k for k in params.keys() if k != 'token'])
-        
+        keys = sorted([k for k in work.keys() if k != 'token'])
+
         # 2. 拼接参数值
         params_str = ""
         for key in keys:
-            value = params[key]
+            value = work[key]
             if isinstance(value, str):
                 params_str += value
-            elif value is not None:
-                # 复杂类型转 JSON（需要递归排序 Key）
+            else:
                 params_str += json.dumps(
                     self._sort_dict_keys(value),
                     ensure_ascii=False,
-                    separators=(',', ':')
+                    separators=(',', ':'),
                 )
         
         # 3. Base64 编码密钥
@@ -64,6 +70,28 @@ class SignatureUtil:
         # 4. 拼接并计算 MD5
         final_str = base64_secret + params_str
         return hashlib.md5(final_str.encode('utf-8')).hexdigest()
+
+    def _normalize_integral(self, obj: Any) -> Any:
+        """递归将整型语义的 float 转为 int，与 Java/Golang 侧 JSON 数字形态对齐。"""
+        if obj is None:
+            return None
+        if isinstance(obj, dict):
+            return {k: self._normalize_integral(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._normalize_integral(x) for x in obj]
+        if isinstance(obj, float) and math.isfinite(obj) and obj.is_integer():
+            iv = int(obj)
+            if -(2 ** 63) <= iv <= 2 ** 63 - 1:
+                return iv
+            return obj
+        if isinstance(obj, Decimal):
+            try:
+                if obj == obj.to_integral_value():
+                    return int(obj)
+            except (OverflowError, ValueError, ArithmeticError):
+                pass
+            return obj
+        return obj
     
     def verify_signature(self, params: Dict[str, Any], expected_token: str) -> bool:
         """
@@ -143,6 +171,6 @@ class SignatureUtil:
         """
         if isinstance(obj, dict):
             return {k: self._sort_dict_keys(v) for k, v in sorted(obj.items())}
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             return [self._sort_dict_keys(item) for item in obj]
         return obj
