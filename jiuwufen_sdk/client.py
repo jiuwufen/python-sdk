@@ -32,7 +32,7 @@ class JiuWuFenClient:
         ...     platform_secret="your-platform-secret",
         ...     base_url="http://d1.95fenapp.com"
         ... )
-        >>> response = client.merchant.send_sms_captcha(mobile="13800000000")
+        >>> response = client.merchant_onboarding.send_sms({"mobile": "13800000000"})
     """
     
     def __init__(
